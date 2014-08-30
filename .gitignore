@@ -1,1 +1,4 @@
 check-timing
+check-timing.o
+check-timing.dll
+check-timing-labview/
