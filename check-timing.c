@@ -39,17 +39,18 @@ void* TP_init(double fs, double dt, double N, double T) {
     return tp;
 }
 
+// Free a timing parameter created on the heap.
+void TP_destroy(TimingParameter *tp) {
+    free(tp);
+}
+
 MU_TEST(test_TP_init) {
     TimingParameter* tp = TP_init(25.0, 0.04, 100, 4);
     mu_assert_double_eq(25.0, tp->fs);
     mu_assert_double_eq(0.04, tp->dt);
     mu_assert_double_eq(100, tp->N);
     mu_assert_double_eq(4, tp->T);
-}
-
-// Free a timing parameter created on the heap.
-void TP_destroy(TimingParameter *tp) {
-    free(tp);
+    TP_destroy(tp);
 }
 
 // One of two subfunctions that enforce consistancy on fs, dt, N and T.
@@ -60,8 +61,8 @@ int fs_dt_consistent(TimingParameter *tp) {
     int dt_defined = tp->dt > 0;
     if (fs_defined && dt_defined) {
         // Both defined; check that they are with the tolerance eps
-        float fs_dt = 1.0 / tp->dt;
-        if (fabs(fs_dt - tp->dt) <= tp->eps) {
+        double fs_inferred = 1.0 / tp->dt;
+        if (fabs(fs_inferred - tp->fs) < tp->eps) {
             // Make sure the timing parameters are actually consistent
             // Since fs is what is sent to the DAQ, we'll define dt in terms
             // of fs.
@@ -118,7 +119,7 @@ int N_T_consistent(TimingParameter *tp) {
         else {
             // The structure should not get into this state. Just raise a
             // status and get out.
-            status = 4;
+            status = -2;
         }
     } else if (N_defined && !T_defined) {
         // Assume fs and dt are already defined. We default to always using fs
@@ -127,7 +128,7 @@ int N_T_consistent(TimingParameter *tp) {
         }
         else {
             // Again, this is not a well-defined state for TP.
-            status = 4;
+            status = -1;
         }
     } else if (!N_defined && T_defined) {
         if (fs_defined && dt_defined) {
@@ -135,7 +136,7 @@ int N_T_consistent(TimingParameter *tp) {
         }
         else {
             // Again, this is not a well-defined state for TP.
-            status = 4;
+            status = -1;
         }
     } else if (!N_defined && !T_defined){
         // Not enough parameters defined; raise a real error
@@ -169,23 +170,105 @@ int check_tp_case(TimingParameter* tp, char message[]) {
     return status;
 }
 
+void check_tp_state(TimingParameter* tp, double expected[]) {
+    mu_assert_double_eq(tp->fs, expected[0]);
+    mu_assert_double_eq(tp->dt, expected[1]);
+    mu_assert_double_eq(tp->N, expected[2]);
+    mu_assert_double_eq(tp->T, expected[3]);
+}
+
 int TP_check(TimingParameter* tp) {
     int status = fs_dt_consistent(tp);
     int status2 = N_T_consistent(tp);
-    return (status || status2);
+    return status2;
+}
+
+MU_TEST(test_fs_dt_consistent) {
+    int status;
+    // Both defined
+    TimingParameter* tp_both = TP_init(2, 0.5, 0, 0);
+    double expected_both[] = {2, 0.5, 0, 0};
+    status = fs_dt_consistent(tp_both);
+    check_tp_state(tp_both, expected_both);
+    TP_destroy(tp_both);
+
+
+    // fs N defined
+    TimingParameter* tp_fs = TP_init(100, 0, 10, 0);
+    // T still 0 afterwards because only checking fs_dt_consistent
+    double expected_fs[] = {100, 0.01, 10, 0};
+    status = fs_dt_consistent(tp_fs);
+    check_tp_state(tp_fs, expected_fs);
+    TP_destroy(tp_fs);
+
+    TimingParameter* tp_dt = TP_init(0, 0.1, 10, 0);
+    double expected_dt[] = {10, 0.1, 10, 0};
+    status = fs_dt_consistent(tp_dt);
+    check_tp_state(tp_dt, expected_dt);
+    TP_destroy(tp_dt);
+
+    TimingParameter* tp_fs_N = TP_init(250, 0, 500, 0);
+    double expected_fs_N[] = {250, 0.004, 500, 0};
+    status = fs_dt_consistent(tp_fs_N);
+    check_tp_state(tp_fs_N, expected_fs_N);
+    TP_destroy(tp_fs_N);
+
+    TimingParameter* tp_neither = TP_init(0, 0, 10, 0);
+    double expected_neither[] = {0, 0, 10, 0};
+    status = fs_dt_consistent(tp_neither);
+    check_tp_state(tp_neither, expected_neither);
+    TP_destroy(tp_neither);
+    mu_assert(status == 2, "Should have status 2 (neither tp nor fs defined");
+
+}
+
+MU_TEST(test_check_tp_case){
+    int status;
+    // Both defined
+    TimingParameter* tp_both = TP_init(2, 0.5, 0, 0);
+    double expected_both[] = {2, 0.5, 0, 0};
+    status = TP_check(tp_both);
+    check_tp_state(tp_both, expected_both);
+    TP_destroy(tp_both);
+    mu_assert_int_eq(-1, status);
+
+
+    // fs N defined
+    TimingParameter* tp_fs = TP_init(100, 0, 10, 0);
+    // T still 0 afterwards because only checking fs_dt_consistent
+    double expected_fs[] = {100, 0.01, 10, 0.1};
+    status = TP_check(tp_fs);
+    check_tp_state(tp_fs, expected_fs);
+    TP_destroy(tp_fs);
+
+    TimingParameter* tp_dt = TP_init(0, 0.1, 10, 0);
+    double expected_dt[] = {10, 0.1, 10, 1};
+    status = TP_check(tp_dt);
+    check_tp_state(tp_dt, expected_dt);
+    TP_destroy(tp_dt);
+
+    TimingParameter* tp_fs_N = TP_init(250, 0, 500, 0);
+    double expected_fs_N[] = {250, 0.004, 500, 2};
+    status = TP_check(tp_fs_N);
+    check_tp_state(tp_fs_N, expected_fs_N);
+    TP_destroy(tp_fs_N);
+
+    TimingParameter* tp_neither = TP_init(0, 0, 10, 0);
+    double expected_neither[] = {0, 0, 10, 0};
+    status = TP_check(tp_neither);
+    check_tp_state(tp_neither, expected_neither);
+    TP_destroy(tp_neither);
+    mu_assert_int_eq(-1, status);
 }
 
 MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(test_TP_init);
+    MU_RUN_TEST(test_fs_dt_consistent);
+    MU_RUN_TEST(test_check_tp_case);
 }
 
 int main(int argc, char const *argv[])
 {
-
-    // printf("int:       %d\n", sizeof(int));
-    // printf("long:      %d\n", sizeof(long));
-    // printf("long long: %d\n", sizeof(long long));
-    // printf("double:    %d\n", sizeof(double));
 
     // Cases below
     TimingParameter* tp_both = TP_init(2, 0.5, 0, 0);
