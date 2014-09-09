@@ -1,5 +1,5 @@
-CC=gcc
-CFLAGS=-Wall
+CC=gcc-4.8
+CFLAGS=-Wall -lm
 
 .PHONY: 
 	clean
