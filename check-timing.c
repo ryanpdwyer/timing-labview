@@ -6,20 +6,25 @@
 // It is designed to allow for easy conversion between sampling frequency (fs),
 // time between data points (dt), number of samples (N),
 // and total sampling time (T) in LabView.
-
-// The structure also defines
-
-// TODO:
-// Define an enum to deal with statuses.
-// Use minunit to do some unittests.
-
+//
+// It uses minunit (http://github.com/siu/minunit) for unittests.
+// To run the tests,
+// 1. Compile check-timing.c (assuming c compiler is gcc)
+//      gcc -lm check-timing.c -o check-timing
+// 
+// 2. Run check-timing
+//      ./check-timing
 
 // We will compile this as a dll to use in Labview. See
 // https://cygwin.com/cygwin-ug-net/dll.html
+// The default instructions there no longer worked for me after switching to
+// using minunit for unittests.
 // Steps:
-// gcc -c check-timing.c
-// gcc -shared -o check-timing.dll check-timing.o
+//      gcc -lm -static-libgcc -c check-timing.c
+//      gcc -shared -lm -static-libgcc -o check-timing.dll check-timing.o
 
+// TODO:
+// Define an enum to deal with statuses.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,11 +44,21 @@ void* TP_init(double fs, double dt, double N, double T) {
     return tp;
 }
 
-// Free a timing parameter created on the heap.
+// Free a TimingParameter created on the heap.
 void TP_destroy(TimingParameter *tp) {
     free(tp);
 }
 
+// A helper function to print a TimingParameter
+void TP_print(TimingParameter *tp) {
+    printf("fs %f\n", tp->fs);
+    printf("dt %f\n", tp->dt);
+    printf("N %f\n", tp->N);
+    printf("T %f\n", tp->T);
+    printf("eps %f\n", tp->eps);
+}
+
+// Test that creating a timing parameter on the heap works as advertised.
 MU_TEST(test_TP_init) {
     TimingParameter* tp = TP_init(25.0, 0.04, 100, 4);
     mu_assert_double_eq(25.0, tp->fs);
@@ -54,7 +69,6 @@ MU_TEST(test_TP_init) {
 }
 
 // One of two subfunctions that enforce consistancy on fs, dt, N and T.
-
 int fs_dt_consistent(TimingParameter *tp) {
     int status = 0;
     int fs_defined = tp->fs > 0;
@@ -93,7 +107,6 @@ int fs_dt_consistent(TimingParameter *tp) {
 
 // The other function which fills in missing parameters, and makes the entire 
 // structure consistent.
-
 int N_T_consistent(TimingParameter *tp) {
     // This function is designed to be called after fs_dt_consistent, and will
     // assign the rest of the unassigned parameters.
@@ -145,14 +158,20 @@ int N_T_consistent(TimingParameter *tp) {
     return status;
 }
 
-void TP_print(TimingParameter *tp) {
-    printf("fs %f\n", tp->fs);
-    printf("dt %f\n", tp->dt);
-    printf("N %f\n", tp->N);
-    printf("T %f\n", tp->T);
-    printf("eps %f\n", tp->eps);
+// The main function that we will call in LabView.
+// After calling this function, the TimingParameter should be in
+// a self-consistent state, or have raised an error by returning a status < 0.
+int TP_check(TimingParameter* tp) {
+    int status;
+    status = fs_dt_consistent(tp);
+    // Ignoring the first status; only used for debugging currently.
+    status = N_T_consistent(tp);
+    return status;
 }
 
+// A helper function to debug TimingParameter by printing.
+// Replaced by minunit unittests, but could still be useful for adding
+// functionality.
 int check_tp_case(TimingParameter* tp, char message[]) {
     int status;
     printf("------------------\n");
@@ -170,6 +189,7 @@ int check_tp_case(TimingParameter* tp, char message[]) {
     return status;
 }
 
+// A helper function to debug a TimingParameter using minunit.
 void check_tp_state(TimingParameter* tp, double expected[]) {
     mu_assert_double_eq(tp->fs, expected[0]);
     mu_assert_double_eq(tp->dt, expected[1]);
@@ -177,21 +197,16 @@ void check_tp_state(TimingParameter* tp, double expected[]) {
     mu_assert_double_eq(tp->T, expected[3]);
 }
 
-int TP_check(TimingParameter* tp) {
-    int status = fs_dt_consistent(tp);
-    int status2 = N_T_consistent(tp);
-    return status2;
-}
-
+// Test fs_dt_consistent with a number of test cases.
 MU_TEST(test_fs_dt_consistent) {
     int status;
+    
     // Both defined
     TimingParameter* tp_both = TP_init(2, 0.5, 0, 0);
     double expected_both[] = {2, 0.5, 0, 0};
     status = fs_dt_consistent(tp_both);
     check_tp_state(tp_both, expected_both);
     TP_destroy(tp_both);
-
 
     // fs N defined
     TimingParameter* tp_fs = TP_init(100, 0, 10, 0);
@@ -201,28 +216,32 @@ MU_TEST(test_fs_dt_consistent) {
     check_tp_state(tp_fs, expected_fs);
     TP_destroy(tp_fs);
 
-    TimingParameter* tp_dt = TP_init(0, 0.1, 10, 0);
+    // dt N defined
+    TimingParameter* tp_dt_N = TP_init(0, 0.1, 10, 0);
     double expected_dt[] = {10, 0.1, 10, 0};
-    status = fs_dt_consistent(tp_dt);
-    check_tp_state(tp_dt, expected_dt);
-    TP_destroy(tp_dt);
-
+    status = fs_dt_consistent(tp_dt_N);
+    check_tp_state(tp_dt_N, expected_dt);
+    TP_destroy(tp_dt_N);
+    
+    // fs N defined
     TimingParameter* tp_fs_N = TP_init(250, 0, 500, 0);
     double expected_fs_N[] = {250, 0.004, 500, 0};
     status = fs_dt_consistent(tp_fs_N);
     check_tp_state(tp_fs_N, expected_fs_N);
     TP_destroy(tp_fs_N);
 
+    // Only N defined
     TimingParameter* tp_neither = TP_init(0, 0, 10, 0);
     double expected_neither[] = {0, 0, 10, 0};
     status = fs_dt_consistent(tp_neither);
     check_tp_state(tp_neither, expected_neither);
     TP_destroy(tp_neither);
-    mu_assert(status == 2, "Should have status 2 (neither tp nor fs defined");
+    mu_assert(2, status);
 
 }
 
-MU_TEST(test_check_tp_case){
+// Test TP_check with the same test cases.
+MU_TEST(test_TP_check){
     int status;
     // Both defined
     TimingParameter* tp_both = TP_init(2, 0.5, 0, 0);
@@ -232,7 +251,6 @@ MU_TEST(test_check_tp_case){
     TP_destroy(tp_both);
     mu_assert_int_eq(-1, status);
 
-
     // fs N defined
     TimingParameter* tp_fs = TP_init(100, 0, 10, 0);
     // T still 0 afterwards because only checking fs_dt_consistent
@@ -241,18 +259,21 @@ MU_TEST(test_check_tp_case){
     check_tp_state(tp_fs, expected_fs);
     TP_destroy(tp_fs);
 
-    TimingParameter* tp_dt = TP_init(0, 0.1, 10, 0);
+    // dt N defined
+    TimingParameter* tp_dt_N = TP_init(0, 0.1, 10, 0);
     double expected_dt[] = {10, 0.1, 10, 1};
-    status = TP_check(tp_dt);
-    check_tp_state(tp_dt, expected_dt);
-    TP_destroy(tp_dt);
+    status = TP_check(tp_dt_N);
+    check_tp_state(tp_dt_N, expected_dt);
+    TP_destroy(tp_dt_N);
 
+    // fs N defined
     TimingParameter* tp_fs_N = TP_init(250, 0, 500, 0);
     double expected_fs_N[] = {250, 0.004, 500, 2};
     status = TP_check(tp_fs_N);
     check_tp_state(tp_fs_N, expected_fs_N);
     TP_destroy(tp_fs_N);
 
+    // Only N defined
     TimingParameter* tp_neither = TP_init(0, 0, 10, 0);
     double expected_neither[] = {0, 0, 10, 0};
     status = TP_check(tp_neither);
@@ -261,12 +282,14 @@ MU_TEST(test_check_tp_case){
     mu_assert_int_eq(-1, status);
 }
 
+// Set up the test suite.
 MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(test_TP_init);
     MU_RUN_TEST(test_fs_dt_consistent);
-    MU_RUN_TEST(test_check_tp_case);
+    MU_RUN_TEST(test_TP_check);
 }
 
+// Run the test suite, and report the results.
 int main(int argc, char const *argv[])
 {
 
