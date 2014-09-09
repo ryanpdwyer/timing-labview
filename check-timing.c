@@ -270,27 +270,6 @@ MU_TEST_SUITE(test_suite) {
 int main(int argc, char const *argv[])
 {
 
-    // Cases below
-    TimingParameter* tp_both = TP_init(2, 0.5, 0, 0);
-    check_tp_case(tp_both, "Both defined");
-    TP_destroy(tp_both);
-
-    TimingParameter* tp_fs = TP_init(100, 0, 10, 0);
-    check_tp_case(tp_fs, "fs N defined");
-    TP_destroy(tp_fs);
-
-    TimingParameter* tp_dt = TP_init(0, 0.1, 10, 0);
-    check_tp_case(tp_dt, "dt N defined");
-    TP_destroy(tp_dt);
-
-    TimingParameter* tp_fs_N = TP_init(250, 0, 500, 0);
-    check_tp_case(tp_fs_N, "fs N defined");
-    TP_destroy(tp_fs_N);
-
-    TimingParameter* tp_neither = TP_init(0, 0, 10, 0);
-    check_tp_case(tp_neither, "Neither defined");
-    TP_destroy(tp_neither);
-
     MU_RUN_SUITE(test_suite);
     MU_REPORT();
 
