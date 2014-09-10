@@ -1,3 +1,6 @@
+// Check Timing Header
+// Include definitions for the function and strucuture used in the LabView
+// code.
 typedef struct TimingParameters {
     double fs;
     double dt;
