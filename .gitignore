@@ -3,4 +3,7 @@ check-timing.o
 check-timing.dll
 check-timing-labview/
 ramp
+ramp.o
+tests
+tests.o
 **.dSYM/
