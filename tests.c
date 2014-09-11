@@ -116,7 +116,9 @@ MU_TEST_SUITE(test_suite) {
 // Run the test suite, and report the results.
 int main(int argc, char const *argv[])
 {
-
+    RampParameter* rp = RP_init(0, 10, 2, 0.01);
+    RP_print(rp);
+    RP_destroy(rp);
 
     MU_RUN_SUITE(test_suite);
     MU_REPORT();

@@ -1,13 +1,13 @@
 CC=gcc-4.8
 CFLAGS=-Wall -lm
 
-check-timing.o:
+check-timing.o: check-timing.c
 	$(CC) $(CFLAGS) -c check-timing.c
 
-ramp.o:
+ramp.o: check-timing.c
 	$(CC) $(CFLAGS) -c ramp.c
 
-tests.o:
+tests.o: tests.c
 	$(CC) $(CFLAGS) -c tests.c
 
 tests: check-timing.o ramp.o tests.o
