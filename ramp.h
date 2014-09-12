@@ -13,6 +13,4 @@ void RP_print(RampParameter* rp);
 
 void* RP_init(double yi, double yf, double dydt, double dy);
 
-void RP_destroy(RampParameter* rp);
-
 int RP_check(RampParameter* rp, TimingParameter* tp);

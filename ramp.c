@@ -11,7 +11,7 @@
 #include "check-timing.h"
 #include "ramp.h"
 
-
+/// Print the contents of the RampParameter.
 void RP_print(RampParameter* rp) {
     printf("yi          %.2f\n", rp->yi);
     printf("yf          %.2f\n", rp->yf);
@@ -20,6 +20,7 @@ void RP_print(RampParameter* rp) {
     printf("y_Delta_min %.1e\n", rp->y_Delta_min);
 }
 
+// Initialize a RampParameter on the heap.
 void* RP_init(double yi, double yf, double dydt, double dy) {
     RampParameter* rp = malloc(sizeof(RampParameter));
     rp->yi = yi;
@@ -28,10 +29,6 @@ void* RP_init(double yi, double yf, double dydt, double dy) {
     rp->dy = dy;
     rp->y_Delta_min = 0.001;
     return rp;
-}
-
-void RP_destroy(RampParameter* rp) {
-    free(rp);
 }
 
 int RP_check(RampParameter* rp, TimingParameter* tp) {

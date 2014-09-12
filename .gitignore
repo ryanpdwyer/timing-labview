@@ -5,7 +5,9 @@ check-timing-labview/
 ramp
 ramp.o
 tests
+tests.exe
 tests.o
 tp
+tp.exe
 tp.o
 **.dSYM/

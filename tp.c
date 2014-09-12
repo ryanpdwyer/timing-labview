@@ -1,10 +1,11 @@
+/// A main function to run TP_check
 #include <stdlib.h>
 #include <stdio.h>
 #include "check-timing.h"
 
 int main(int argc, char const *argv[])
 {
-    if (argc < 4) {
+    if (argc < 5) {
         printf("Please input fs dt N T.\n");
     }
     else {
@@ -14,9 +15,10 @@ int main(int argc, char const *argv[])
         N = atof(argv[3]);
         T = atof(argv[4]);
         TimingParameter* tp = TP_init(fs, dt, N, T);
-        TP_check(tp);
+        int status = TP_check(tp);
         TP_print(tp);
-        TP_destroy(tp);
+        printf("status: %d\n", status);
+        free(tp);
     }
     return 0;
 }

@@ -1,37 +1,38 @@
-// check-timing.c
-// Ryan Dwyer
-// 2014-08-30
+/// check-timing.c
+/// Ryan Dwyer
+/// 2014-08-30
 
-// This file implements a structure, TimingParameter, defined in check-timing.h.
-// It is designed to allow for easy conversion between sampling frequency (fs),
-// time between data points (dt), number of samples (N),
-// and total sampling time (T) in LabView.
-//
-// It uses minunit (http://github.com/siu/minunit) for unittests.
-// To run the tests,
-// 1. Compile check-timing.c (assuming c compiler is gcc)
-//      gcc -lm check-timing.c -o check-timing
-// 
-// 2. Run check-timing
-//      ./check-timing
+/// This file implements a structure, TimingParameter, defined in
+/// check-timing.h.
+/// It is designed to allow for easy conversion between sampling frequency (fs),
+/// time between data points (dt), number of samples (N), and total sampling
+/// time (T) in LabView.
+/// 
+/// It uses minunit (http://github.com/siu/minunit) for unittests.
+/// To run the tests,
+/// 1. Build using make
+///     make tests
+/// 
+/// 2. Run tests
+///      ./tests
+///
+/// We will compile this as a dll to use in Labview. See
+/// https://cygwin.com/cygwin-ug-net/dll.html
+/// The default instructions there no longer worked for me after switching to
+/// using minunit for unittests.
+/// Steps:
+///      gcc -lm -static-libgcc -c check-timing.c ramp.c tests.c
+///      gcc -shared -lm -static-libgcc -o timing-labview.dll check-timing.o ramp.o tests.o
 
-// We will compile this as a dll to use in Labview. See
-// https://cygwin.com/cygwin-ug-net/dll.html
-// The default instructions there no longer worked for me after switching to
-// using minunit for unittests.
-// Steps:
-//      gcc -lm -static-libgcc -c check-timing.c
-//      gcc -shared -lm -static-libgcc -o check-timing.dll check-timing.o
-
-// TODO:
-// Define an enum to deal with statuses.
+/// TODO:
+/// Define a function to get an error message from the status.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <tgmath.h>
 #include "check-timing.h"
 
-// Initialize a TimingParameter on the heap.
+/// Initialize a TimingParameter on the heap.
 void* TP_init(double fs, double dt, double N, double T) {
     TimingParameter* tp = malloc(sizeof(TimingParameter));
     tp->fs = fs;
@@ -43,17 +44,12 @@ void* TP_init(double fs, double dt, double N, double T) {
     return tp;
 }
 
-// Free a TimingParameter created on the heap.
-void TP_destroy(TimingParameter *tp) {
-    free(tp);
-}
-
 // A helper function to print a TimingParameter
 void TP_print(TimingParameter *tp) {
-    printf("fs %.3g\n", tp->fs);
-    printf("dt %.3g\n", tp->dt);
-    printf("N %.1f\n", tp->N);
-    printf("T %.2g\n", tp->T);
+    printf("fs  %.3g\n", tp->fs);
+    printf("dt  %.3g\n", tp->dt);
+    printf("N   %.1f\n", tp->N);
+    printf("T   %.2g\n", tp->T);
     printf("eps %.2g\n", tp->eps);
 }
 

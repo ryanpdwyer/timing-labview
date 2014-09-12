@@ -14,8 +14,6 @@ typedef struct TimingParameters {
 
 void* TP_init(double fs, double dt, double N, double T);
 
-void TP_destroy(TimingParameter *tp);
-
 int fs_dt_consistent(TimingParameter *tp);
 
 int N_T_consistent(TimingParameter *tp);
