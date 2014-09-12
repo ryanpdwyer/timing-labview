@@ -6,4 +6,6 @@ ramp
 ramp.o
 tests
 tests.o
+tp
+tp.o
 **.dSYM/
