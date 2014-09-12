@@ -42,8 +42,8 @@ int RP_check(RampParameter* rp, TimingParameter* tp) {
     }
     if (rp->dy > 0) {
         double N = floor(y_Delta / rp->dy + 0.5);
-        // N must be greater than or equal to 1 for a ramp pattern to make sense.
-        tp->N = fmax(N, 1);
+        // N must be greater than or equal to 2 for a ramp pattern to make sense.
+        tp->N = fmax(N, 2);
     }
     // Now everything is set up; just need to send this to the timing parameter
     int status = TP_check(tp);

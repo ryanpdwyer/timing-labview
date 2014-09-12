@@ -4,17 +4,17 @@
 
 // A helper function to debug a TimingParameter using minunit.
 void check_tp_state(TimingParameter* tp, double expected[]) {
-    mu_assert_double_eq(tp->fs, expected[0]);
-    mu_assert_double_eq(tp->dt, expected[1]);
-    mu_assert_double_eq(tp->N, expected[2]);
-    mu_assert_double_eq(tp->T, expected[3]);
+    mu_assert_double_eq(expected[0], tp->fs);
+    mu_assert_double_eq(expected[1], tp->dt);
+    mu_assert_double_eq(expected[2], tp->N);
+    mu_assert_double_eq(expected[3], tp->T);
 }
 
 void check_rp_state(RampParameter* rp, double expected[]) {
-    mu_assert_double_eq(rp->yi, expected[0]);
-    mu_assert_double_eq(rp->yf, expected[1]);
-    mu_assert_double_eq(rp->dydt, expected[2]);
-    mu_assert_double_eq(rp->dy, expected[3]);
+    mu_assert_double_eq(expected[0], rp->yi);
+    mu_assert_double_eq(expected[1], rp->yf);
+    mu_assert_double_eq(expected[2], rp->dydt);
+    mu_assert_double_eq(expected[3], rp->dy);
 }
 
 // Test that creating a timing parameter on the heap works as advertised.
@@ -129,21 +129,21 @@ MU_TEST(test_RP_check) {
     TP_destroy(tp1);
     RP_destroy(rp1);
 
-    // // 
-    // TimingParameter* tp2 = TP_init(0, 0, 0, 0);
-    // RampParameter* rp2 = RP_init(0, 0, 2, 0.01);
+    // Case that requires N to be forced to 2.
+    TimingParameter* tp2 = TP_init(0, 0, 0, 0);
+    RampParameter* rp2 = RP_init(0, 0, 2, 0.01);
     
-    // status = RP_check(rp2, tp2);
-    // mu_assert_int_eq(0, status);
+    status = RP_check(rp2, tp2);
+    mu_assert_int_eq(0, status);
 
-    // double tp_exp[] = {200, 0.005, 1, 0.05};
-    // double rp_exp[] = {0, 10, 2, 0.01};
-    
-    // check_tp_state(tp2, tp_exp);
-    // check_rp_state(rp2, rp_exp);
+    double tp_exp2[] = {4000, 0.00025, 2, 0.0005};
+    double rp_exp2[] = {0, 0, 2, 0.01};
 
-    // TP_destroy(tp2);
-    // RP_destroy(rp2);
+    check_tp_state(tp2, tp_exp2);
+    check_rp_state(rp2, rp_exp2);
+
+    TP_destroy(tp2);
+    RP_destroy(rp2);
 
 }
 
