@@ -50,11 +50,11 @@ void TP_destroy(TimingParameter *tp) {
 
 // A helper function to print a TimingParameter
 void TP_print(TimingParameter *tp) {
-    printf("fs %f\n", tp->fs);
-    printf("dt %f\n", tp->dt);
-    printf("N %f\n", tp->N);
-    printf("T %f\n", tp->T);
-    printf("eps %f\n", tp->eps);
+    printf("fs %.3g\n", tp->fs);
+    printf("dt %.3g\n", tp->dt);
+    printf("N %.1f\n", tp->N);
+    printf("T %.2g\n", tp->T);
+    printf("eps %.2g\n", tp->eps);
 }
 
 // One of two subfunctions that enforce consistancy on fs, dt, N and T.
@@ -134,7 +134,7 @@ int N_T_consistent(TimingParameter *tp) {
         }
     } else if (!N_defined && T_defined) {
         if (fs_defined && dt_defined) {
-            tp->N = tp->T * tp->fs;
+            tp->N = floor(tp->T * tp->fs + 0.5);
         }
         else {
             // Again, this is not a well-defined state for TP.

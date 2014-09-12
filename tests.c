@@ -10,13 +10,18 @@ void check_tp_state(TimingParameter* tp, double expected[]) {
     mu_assert_double_eq(tp->T, expected[3]);
 }
 
+void check_rp_state(RampParameter* rp, double expected[]) {
+    mu_assert_double_eq(rp->yi, expected[0]);
+    mu_assert_double_eq(rp->yf, expected[1]);
+    mu_assert_double_eq(rp->dydt, expected[2]);
+    mu_assert_double_eq(rp->dy, expected[3]);
+}
+
 // Test that creating a timing parameter on the heap works as advertised.
 MU_TEST(test_TP_init) {
     TimingParameter* tp = TP_init(25.0, 0.04, 100, 4);
-    mu_assert_double_eq(25.0, tp->fs);
-    mu_assert_double_eq(0.04, tp->dt);
-    mu_assert_double_eq(100, tp->N);
-    mu_assert_double_eq(4, tp->T);
+    double expected[] = {25, 0.04, 100, 4};
+    check_tp_state(tp, expected);
     TP_destroy(tp);
 }
 
@@ -106,19 +111,61 @@ MU_TEST(test_TP_check){
 }
 
 
+MU_TEST(test_RP_check) {
+    int status;
+    // Normal case
+    TimingParameter* tp1 = TP_init(0, 0, 0, 0);
+    RampParameter* rp1 = RP_init(0, 10, 2, 0.01);
+    
+    status = RP_check(rp1, tp1);
+    mu_assert_int_eq(0, status);
+
+    double tp_exp[] = {200, 0.005, 1000, 5};
+    double rp_exp[] = {0, 10, 2, 0.01};
+    
+    check_tp_state(tp1, tp_exp);
+    check_rp_state(rp1, rp_exp);
+
+    TP_destroy(tp1);
+    RP_destroy(rp1);
+
+    // // 
+    // TimingParameter* tp2 = TP_init(0, 0, 0, 0);
+    // RampParameter* rp2 = RP_init(0, 0, 2, 0.01);
+    
+    // status = RP_check(rp2, tp2);
+    // mu_assert_int_eq(0, status);
+
+    // double tp_exp[] = {200, 0.005, 1, 0.05};
+    // double rp_exp[] = {0, 10, 2, 0.01};
+    
+    // check_tp_state(tp2, tp_exp);
+    // check_rp_state(rp2, rp_exp);
+
+    // TP_destroy(tp2);
+    // RP_destroy(rp2);
+
+}
+
 // Set up the test suite.
 MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(test_TP_init);
     MU_RUN_TEST(test_fs_dt_consistent);
     MU_RUN_TEST(test_TP_check);
+    MU_RUN_TEST(test_RP_check);
 }
 
 // Run the test suite, and report the results.
 int main(int argc, char const *argv[])
 {
     RampParameter* rp = RP_init(0, 10, 2, 0.01);
+    TimingParameter* tp = TP_init(0, 0, 0, 0);
     RP_print(rp);
+    int status = RP_check(rp, tp);
+    RP_print(rp);
+    TP_print(tp);
     RP_destroy(rp);
+    TP_destroy(tp);
 
     MU_RUN_SUITE(test_suite);
     MU_REPORT();
