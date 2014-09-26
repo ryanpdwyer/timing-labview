@@ -7,7 +7,10 @@ ramp.o
 tests
 tests.exe
 tests.o
-tp
-tp.exe
-tp.o
+evaltp
+evaltp.exe
+evaltp.o
+evalramp.o
+evalramp.exe
+evalramp
 **.dSYM/
