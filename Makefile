@@ -6,7 +6,7 @@ EXECUTABLES=tests evaltp evalrampmak
 
 
 
-all: tests tp
+all: tests
 
 tests: check-timing.o ramp.o tests.o
 
