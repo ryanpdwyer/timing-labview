@@ -1,4 +1,3 @@
-CC=gcc
 CFLAGS=-Wall -Wextra -O3 -pedantic -std=c99
 LDLIBS=-lm
 OBJS=check-timing.o ramp.o tests.o evaltp.o evalramp.o
