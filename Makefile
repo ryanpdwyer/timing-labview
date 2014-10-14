@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wextra -O3 -pedantic
+CFLAGS=-Wall -Wextra -O3 -pedantic -std=gnu99
 LDLIBS=-lm
 OBJS=check-timing.o ramp.o tests.o evaltp.o evalramp.o
 EXECUTABLES=tests evaltp evalrampmak
@@ -25,8 +25,8 @@ evalramp: evalramp.o check-timing.o ramp.o
 # Note: This target will only compile on Windows using msys.
 labview: check-timing.o ramp.o tests.o
 	$(CC) $(CFLAGS)  -c check-timing.c ramp.c tests.c $(LDLIBS)
-	$(CC) -shared -static-libgcc -o check-timing.dll check-timing.o ramp.o tests.o $(LDLIBS)
-	$(CC) -shared -static-libgcc -o ramp.dll check-timing.o ramp.o tests.o $(LDLIBS)
+	$(CC) -shared -static-libgcc -fPIC -o check-timing.dll check-timing.o ramp.o tests.o $(LDLIBS)
+	$(CC) -shared -static-libgcc -fPIC -o ramp.dll check-timing.o ramp.o tests.o $(LDLIBS)
 
 evaltp.o: check-timing.h
 
