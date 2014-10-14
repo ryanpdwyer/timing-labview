@@ -5,9 +5,10 @@ EXECUTABLES=tests evaltp evalrampmak
 
 
 
-all: tests
+all: tests evaltp evalramp labview
 
 tests: check-timing.o ramp.o tests.o
+	$(CC) $(LDLIBS) check-timing.o ramp.o tests.o -o tests
 
 evaltp: check-timing.o evaltp.o
 
@@ -27,7 +28,7 @@ ramp.o: check-timing.h ramp.h
 
 evalramp.o: check-timing.h ramp.h
 
-tests.o: check-timing.h ramp.h
+tests.o: check-timing.h ramp.h minunit.h
 
 .PHONY:
 	clean
