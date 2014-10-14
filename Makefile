@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wextra -O3 -pedantic -std=c99
+CFLAGS=-Wall -Wextra -O3 -pedantic
 LDLIBS=-lm
 OBJS=check-timing.o ramp.o tests.o evaltp.o evalramp.o
 EXECUTABLES=tests evaltp evalrampmak
