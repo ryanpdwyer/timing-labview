@@ -13,7 +13,10 @@ endif
 all: tests evaltp evalramp labview
 
 tests: check-timing.o ramp.o tests.o
-	$(CC) $(LDLIBS) check-timing.o ramp.o tests.o -o tests
+	$(CC) check-timing.o ramp.o tests.o -o tests $(LDLIBS)
+
+test:
+	./tests && exit $$?
 
 evaltp: check-timing.o evaltp.o
 

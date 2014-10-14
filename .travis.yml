@@ -1,7 +1,11 @@
 language: c
 
+compiler:
+    - cc
+    - clang
+
 before_script:
-    - make tests
+    - make all
 
 script:
-    - ./tests
+    - make test
