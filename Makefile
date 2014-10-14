@@ -6,7 +6,7 @@ EXECUTABLES=tests evaltp evalrampmak
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
-LDLIBS += -lrt
+LDLIBS += -Wl,--no-as-needed -lrt
 endif
 
 
@@ -37,6 +37,7 @@ ramp.o: check-timing.h ramp.h
 evalramp.o: check-timing.h ramp.h
 
 tests.o: check-timing.h ramp.h minunit.h
+	$(CC) $(CFLAGS) -c -o tests.o tests.c $(LDLIBS)
 
 .PHONY:
 	clean
