@@ -24,9 +24,9 @@ evalramp: evalramp.o check-timing.o ramp.o
 
 # Note: This target will only compile on Windows using msys.
 labview: check-timing.o ramp.o tests.o
-	$(CC) $(CFLAGS) $(LDLIBS) -c check-timing.c ramp.c tests.c
-	$(CC) $(LDLIBS) -shared -static-libgcc -o check-timing.dll check-timing.o ramp.o tests.o
-	$(CC) $(LDLIBS) -shared -static-libgcc -o ramp.dll check-timing.o ramp.o tests.o
+	$(CC) $(CFLAGS)  -c check-timing.c ramp.c tests.c $(LDLIBS)
+	$(CC) -shared -static-libgcc -o check-timing.dll check-timing.o ramp.o tests.o $(LDLIBS)
+	$(CC) -shared -static-libgcc -o ramp.dll check-timing.o ramp.o tests.o $(LDLIBS)
 
 evaltp.o: check-timing.h
 
