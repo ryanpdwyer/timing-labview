@@ -3,6 +3,11 @@ LDLIBS=-lm
 OBJS=check-timing.o ramp.o tests.o evaltp.o evalramp.o
 EXECUTABLES=tests evaltp evalrampmak
 
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Linux)
+LDLIBS += -lrt
+endif
 
 
 all: tests evaltp evalramp labview
